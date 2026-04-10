@@ -6,7 +6,6 @@ st.set_page_config(page_title="Dragon Tiger Tool", layout="wide")
 
 DATA_FILE = "history.json"
 
-# ================= LOAD DATA =================
 def load_history():
     if os.path.exists(DATA_FILE):
         with open(DATA_FILE, "r") as f:
@@ -20,13 +19,12 @@ def save_history(data):
 if "history" not in st.session_state:
     st.session_state.history = load_history()
 
-# ================= SETTINGS =================
+# Sidebar settings
 st.sidebar.header("⚙️ Cài đặt")
 max_history = st.sidebar.number_input("Số ván lưu tối đa", 100, 5000, 600, step=100)
 min_diff = st.sidebar.number_input("Độ lệch tối thiểu để đánh", 1, 10, 3)
 min_sample = st.sidebar.number_input("Số mẫu tối thiểu", 1, 20, 3)
 
-# ================= UI =================
 st.title("🐉🐯 Dragon Tiger Tool")
 
 cards_top = ['A','2','3','4','5','6','7']
@@ -35,37 +33,45 @@ cards_bottom = ['8','9','10','J','Q','K']
 # ---------- STYLE ----------
 st.markdown("""
 <style>
-input {
-    text-align: center;
-    font-size: 1.4rem !important;
-    font-weight: 700 !important;
-    width: 3rem !important;
-    height: 2.5rem !important;
+div[data-testid="stHorizontalBlock"] {
+    flex-wrap: nowrap !important;
+    justify-content: center !important;
+    gap: 0.2rem !important;
+}
+div[data-testid="stColumn"] {
+    flex: 0 0 auto !important;
+}
+div[data-testid="stButton"] button {
+    height: 3rem !important;
+    width: 3.5rem !important;
+    font-size: 2.4rem !important;   /* chữ chiếm ~80% */
+    line-height: 3rem !important;
+    font-weight: 900 !important;
     margin: 0.2rem !important;
 }
 </style>
 """, unsafe_allow_html=True)
 
-# ---------- Hàm render bảng nhập ----------
-def render_inputs(cards, prefix):
+# ---------- Hàm render hàng nút ----------
+def render_row(cards, prefix):
     cols = st.columns(len(cards))
-    values = []
+    selected = None
     for i, c in enumerate(cards):
-        val = cols[i].text_input(c, key=f"{prefix}_{c}")
-        values.append(val)
-    return values
+        if cols[i].button(c, key=f"{prefix}_{c}_{i}"):
+            selected = c
+    return selected
 
 # ---------- RỒNG ----------
 st.subheader("🐉 Rồng")
-r_top = render_inputs(cards_top, "r_top")
-r_bottom = render_inputs(cards_bottom, "r_bottom")
-selected_r = "".join(r_top + r_bottom).strip()
+selected_r_top = render_row(cards_top, "r_top")
+selected_r_bottom = render_row(cards_bottom, "r_bottom")
+selected_r = selected_r_top or selected_r_bottom
 
 # ---------- HỔ ----------
 st.subheader("🐯 Hổ")
-h_top = render_inputs(cards_top, "h_top")
-h_bottom = render_inputs(cards_bottom, "h_bottom")
-selected_h = "".join(h_top + h_bottom).strip()
+selected_h_top = render_row(cards_top, "h_top")
+selected_h_bottom = render_row(cards_bottom, "h_bottom")
+selected_h = selected_h_top or selected_h_bottom
 
 # ================= INPUT =================
 if selected_r and selected_h:
