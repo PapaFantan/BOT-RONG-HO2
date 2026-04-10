@@ -36,58 +36,70 @@ max_history = st.sidebar.number_input("Số ván lưu tối đa", min_value=100,
 min_diff = st.sidebar.number_input("Độ lệch tối thiểu để đánh", min_value=1, max_value=10, value=3)
 min_sample = st.sidebar.number_input("Số mẫu tối thiểu", min_value=1, max_value=20, value=3)
 
+# --- Biến tùy chỉnh giao diện ---
+icon_size = st.sidebar.slider("Kích thước chữ trên nút", 16, 40, 20)
+icon_width = st.sidebar.slider("Chiều rộng nút (px)", 40, 120, 60)
+icon_height = st.sidebar.slider("Chiều cao nút (px)", 30, 80, 40)
+per_row = st.sidebar.slider("Số nút mỗi hàng", 3, 7, 5)
+layout_mode = st.sidebar.radio("Kiểu hiển thị", ["Nhiều hàng ngang", "Dọc"])
+
 # ================= UI =================
 st.title("🐉🐯 Dragon Tiger Tool")
 
 cards = ['A','2','3','4','5','6','7','8','9','10','J','Q','K']
 
 # ---------- STYLE ----------
-st.markdown("""
+st.markdown(f"""
 <style>
-div[data-testid="stButton"] button {
-    font-size: 28px !important;
+div[data-testid="stButton"] button {{
+    font-size: {icon_size}px !important;
     font-weight: 700 !important;
     color: #111 !important;
-    height: 48px !important;
-    width: 60px !important;
+    height: {icon_height}px !important;
+    width: {icon_width}px !important;
     margin: 2px !important;
-}
-div[data-testid="stButton"] button[id*="r_"] {
+}}
+div[data-testid="stButton"] button[id*="r_"] {{
     background: linear-gradient(135deg, #ff4d4f, #b71c1c) !important;
-}
-div[data-testid="stButton"] button[id*="h_"] {
+}}
+div[data-testid="stButton"] button[id*="h_"] {{
     background: linear-gradient(135deg, #42a5f5, #0d47a1) !important;
-}
-div[data-testid="stButton"] button:hover { filter: brightness(1.2); }
-div[data-testid="stButton"] button:active { transform: scale(0.95); }
-.prediction-box {
+}}
+div[data-testid="stButton"] button:hover {{ filter: brightness(1.2); }}
+div[data-testid="stButton"] button:active {{ transform: scale(0.95); }}
+.prediction-box {{
     background-color: #d4edda;
     padding: 15px;
     border-radius: 10px;
     font-size: 24px;
     font-weight: bold;
     color: #155724;
-}
+}}
 </style>
 """, unsafe_allow_html=True)
 
-# ---------- Hàm render nút theo nhiều hàng ----------
-def render_buttons(prefix):
-    per_row = 5  # số nút mỗi hàng
-    for i in range(0, len(cards), per_row):
-        cols = st.columns(per_row)
-        for j, c in enumerate(cards[i:i+per_row]):
-            if cols[j].button(c, key=f"{prefix}_{c}_{i+j}"):
-                return c
-    return None
+# ---------- Hàm render nút ----------
+def render_buttons(prefix, per_row=5, layout="Nhiều hàng ngang"):
+    selected = None
+    if layout == "Nhiều hàng ngang":
+        for i in range(0, len(cards), per_row):
+            cols = st.columns(per_row)
+            for j, c in enumerate(cards[i:i+per_row]):
+                if cols[j].button(c, key=f"{prefix}_{c}_{i+j}"):
+                    selected = c
+    else:  # Dọc
+        for i, c in enumerate(cards):
+            if st.button(c, key=f"{prefix}_{c}_{i}"):
+                selected = c
+    return selected
 
 # ---------- RỒNG ----------
 st.subheader("🐉 Rồng")
-selected_r = render_buttons("r")
+selected_r = render_buttons("r", per_row=per_row, layout=layout_mode)
 
 # ---------- HỔ ----------
 st.subheader("🐯 Hổ")
-selected_h = render_buttons("h")
+selected_h = render_buttons("h", per_row=per_row, layout=layout_mode)
 
 # ================= INPUT =================
 if selected_r and selected_h:
