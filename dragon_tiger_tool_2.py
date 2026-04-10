@@ -41,13 +41,18 @@ div[data-testid="stHorizontalBlock"] {
 div[data-testid="stColumn"] {
     flex: 0 0 auto !important;
 }
+
+/* Nút icon: chữ to bằng tiêu đề */
 div[data-testid="stButton"] button {
-    height: 3rem !important;
-    width: 3.5rem !important;
-    font-size: 2.4rem !important;   /* chữ chiếm ~80% */
-    line-height: 3rem !important;
-    font-weight: 900 !important;
+    height: 3rem !important;          /* chiều cao nút */
+    width: 4rem !important;           /* chiều rộng nút */
+    font-size: 3.6rem !important;     /* gần bằng chiều cao => chữ chiếm full */
+    line-height: 4rem !important;     /* căn giữa theo chiều cao */
+    font-weight: 900 !important;      /* đậm tối đa */
+    text-align: center !important;
     margin: 0.2rem !important;
+    color: #000 !important;           /* màu chữ đen rõ */
+    -webkit-text-stroke: 1px #000;    /* viền chữ => nét dày, rõ ràng */
 }
 </style>
 """, unsafe_allow_html=True)
