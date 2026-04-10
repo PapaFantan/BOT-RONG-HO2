@@ -39,16 +39,12 @@ min_sample = st.sidebar.number_input("Số mẫu tối thiểu", min_value=1, ma
 # ================= UI =================
 st.title("🐉🐯 Dragon Tiger Tool")
 
-cards_top = ['A','2','3','4','5','6','7']   # 7 nút hàng trên
-cards_bottom = ['8','9','10','J','Q','K']  # 6 nút hàng dưới
+cards = ['A','2','3','4','5','6','7','8','9','10','J','Q','K']
 
 # ---------- STYLE ----------
 st.markdown("""
 <style>
-div[data-testid="stHorizontalBlock"] {
-    flex-wrap: nowrap !important;   /* ép không cho xuống dòng */
-    justify-content: center !important; /* căn giữa */
-}
+/* BUTTON BASE */
 div[data-testid="stButton"] button {
     font-size: 40px !important;      /* tăng size chữ */
     font-weight: 900 !important;     /* đậm tối đa */
@@ -62,14 +58,28 @@ div[data-testid="stButton"] button {
     /* làm chữ nét hơn */
     text-shadow: 0px 0px 2px rgba(0,0,0,0.5);
 }
+
+/* RỒNG - đỏ */
 div[data-testid="stButton"] button[id*="r_"] {
     background: linear-gradient(135deg, #ff4d4f, #b71c1c) !important;
 }
+
+/* HỔ - xanh */
 div[data-testid="stButton"] button[id*="h_"] {
     background: linear-gradient(135deg, #42a5f5, #0d47a1) !important;
 }
-div[data-testid="stButton"] button:hover { filter: brightness(1.2); }
-div[data-testid="stButton"] button:active { transform: scale(0.95); }
+
+/* HOVER */
+div[data-testid="stButton"] button:hover {
+    filter: brightness(1.2);
+}
+
+/* ACTIVE */
+div[data-testid="stButton"] button:active {
+    transform: scale(0.95);
+}
+
+/* DỰ BÁO BOX */
 .prediction-box {
     background-color: #d4edda;
     padding: 15px;
@@ -81,38 +91,38 @@ div[data-testid="stButton"] button:active { transform: scale(0.95); }
 </style>
 """, unsafe_allow_html=True)
 
-# ---------- Hàm render hàng ----------
-def render_row(cards, prefix):
-    cols = st.columns(len(cards))
-    selected = None
-    for i, c in enumerate(cards):
-        if cols[i].button(c, key=f"{prefix}_{c}_{i}"):
-            selected = c
-    return selected
-
 # ---------- RỒNG ----------
 st.subheader("🐉 Rồng")
-selected_r_top = render_row(cards_top, "r_top")
-selected_r_bottom = render_row(cards_bottom, "r_bottom")
-selected_r = selected_r_top or selected_r_bottom
+cols_r = st.columns(len(cards))
+for i, c in enumerate(cards):
+    if cols_r[i].button(c, key=f"r_{c}_{i}"):
+        st.session_state.selected_r = c
 
 # ---------- HỔ ----------
 st.subheader("🐯 Hổ")
-selected_h_top = render_row(cards_top, "h_top")
-selected_h_bottom = render_row(cards_bottom, "h_bottom")
-selected_h = selected_h_top or selected_h_bottom
+cols_h = st.columns(len(cards))
+for i, c in enumerate(cards):
+    if cols_h[i].button(c, key=f"h_{c}_{i}"):
+        st.session_state.selected_h = c
 
 # ================= INPUT =================
-if selected_r and selected_h:
-    order = cards_top + cards_bottom
-    if order.index(selected_r) > order.index(selected_h):
+if "selected_r" in st.session_state and "selected_h" in st.session_state:
+    r = st.session_state.selected_r
+    h = st.session_state.selected_h
+
+    order = cards
+
+    if order.index(r) > order.index(h):
         result = "R"
-    elif order.index(selected_r) < order.index(selected_h):
+    elif order.index(r) < order.index(h):
         result = "H"
     else:
         result = "T"
 
-    st.session_state.history.append((selected_r, selected_h, result))
+    st.session_state.history.append((r, h, result))
+
+    del st.session_state.selected_r
+    del st.session_state.selected_h
 
     if len(st.session_state.history) > max_history:
         st.session_state.history = st.session_state.history[-max_history:]
@@ -135,6 +145,7 @@ if len(st.session_state.history) >= 2:
     target = (last_pair[0], last_pair[1])
 
     follow_results = []
+
     for i in range(len(st.session_state.history)-1):
         d, t, r = st.session_state.history[i]
         if (d, t) == target:
